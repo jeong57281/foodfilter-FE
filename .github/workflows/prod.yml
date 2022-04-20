@@ -1,0 +1,27 @@
+name: prod-CI
+
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    if: github.event.pull_request.merged
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.GCP_SSH_PROD_HOST }}
+          username: ${{ secrets.GCP_SSH_USERNAME }}
+          password: ${{ secrets.GCP_SSH_PASSWORD }}
+          port: ${{ secrets.GCP_SSH_PORT }}
+          script: |
+            cd ${{ secrets.GCP_WEB_PATH }}
+            git checkout master
+            git pull
+            npm install
+            npm run build
