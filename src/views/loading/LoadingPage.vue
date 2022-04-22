@@ -16,7 +16,7 @@ export default ({
   name: 'LoadingPage',
   mounted() {
     const newRoom = Math.random().toString(16).substr(2, 8);
-    axios.get('/api/maps', {
+    axios.post('/api/maps', {}, {
       params: { roomId: newRoom }
     })
     .then(() => {
