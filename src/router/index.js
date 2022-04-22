@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import ConnectPage from '@/views/main/ConnectPage'
+import MainPage from '@/views/main/MainPage'
 import LoadingPage from '@/views/loading/LoadingPage'
 import ErrorPage from '@/views/common/component/ErrorPage'
 
@@ -16,8 +16,8 @@ export default new Router({
     },
     {
       path: '/room/:id',
-      name: 'ConnectPage',
-      component: ConnectPage
+      name: 'MainPage',
+      component: MainPage
     },
     {
       path: '*',

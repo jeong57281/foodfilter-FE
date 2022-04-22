@@ -13,7 +13,7 @@
 export default ({
   methods: {
     newMap() {
-      location.replace('/');
+      this.$router.replace('/');
     }
   },
   name: 'ErrorPage',
