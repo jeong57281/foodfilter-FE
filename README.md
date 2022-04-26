@@ -6,6 +6,8 @@
   <img src ="https://img.shields.io/badge/Node.js-339933?&style=flat-square&logo=Node.js&logoColor=white"/>
 </p>
 
+[백엔드 레포지토리](https://github.com/jeong57281/foodfilter-BE)
+
 ## 개요
 
 여럿이 같은 화면에서 자신의 `음식 종류` 필터를 공유하여, 모두가 먹고 싶어하는 음식점의 위치를 검색할 수 있는 지도 웹 서비스 입니다.
