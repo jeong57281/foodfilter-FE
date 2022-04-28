@@ -20,7 +20,7 @@ export default ({
       params: { roomId: newRoom }
     })
     .then(() => {
-      this.$router.push(`/room/${newRoom}`);
+      this.$router.replace(`/room/${newRoom}`);
     })
     .catch(() => {
       this.content = '오류가 발생했습니다.';
