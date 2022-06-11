@@ -43,9 +43,7 @@
         this.open = !this.open;
       },
       changeLoc: function(sid){
-        eventBus.$emit('changeUserLoc', {
-          sid: sid
-        });
+        this.$emit('changeUserLoc', sid);
       },
       changeName: function(){
         const input = document.querySelector('#userNameInput > input');
@@ -57,9 +55,7 @@
           this.$socket.emit('changeName', {
             name: this.myName
           });
-          eventBus.$emit('changeName', {
-            name: this.myName
-          });
+          this.$emit('changeName', this.myName);
         }
       }
     },

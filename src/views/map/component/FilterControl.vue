@@ -120,7 +120,16 @@
       }
     },
     props: ['isGuide'],
+    watch: {
+      isGuide: 'updateFilter'
+    },
     methods: {
+      updateFilter: function(){
+        if(this.activate){
+          this.initMyFilter();
+          this.updateUserFilters();
+        }
+      },
       applyFilter: function(){
         // 필터 창 닫기
         this.activate = false;
@@ -142,9 +151,7 @@
             search.push(this.myFilter[i].keyword);
           }
         }
-        eventBus.$emit('loadShop', {
-          search: search
-        })
+        this.$emit('loadShop', search);
       },
       clickUserFilter: function(sid){
         // 필터 정보 업데이트
@@ -187,13 +194,6 @@
       }
     },
     mounted() {
-      // filter renew
-      eventBus.$on('updateFilter', () => {
-        if(this.activate){
-          this.initMyFilter();
-          this.updateUserFilters();
-        }
-      });
       // filter toggle
       eventBus.$on('toggleFilter', () => {
         if(!this.activate){

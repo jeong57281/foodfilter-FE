@@ -1,13 +1,20 @@
 <template>
   <div v-if="!error" id="main">
     <!-- google map -->
-    <div id="map"></div>
+    <div id="map"/>
     <!-- filter control -->
-    <FilterControl v-bind:isGuide="isGuide"></FilterControl>
+    <FilterControl
+      v-bind:isGuide="isGuide"
+      v-on:loadShop="loadShop"
+    />
     <!-- navigation bar -->
     <div id="navbar">
-      <UserControl v-bind:isGuide="isGuide"></UserControl>
-      <MenuControl v-on:changeMyLoc="changeMyLoc"></MenuControl>
+      <UserControl
+        v-bind:isGuide="isGuide"
+        v-on:changeUserLoc="changeUserLoc"
+        v-on:changeName="changeName"
+      />
+      <MenuControl v-on:changeMyLoc="changeMyLoc"/>
     </div>
     <!-- loading image -->
     <img
@@ -71,6 +78,17 @@ let defaultPosition;
 export default ({
   name: 'GoogleMap',
   methods: {
+    changeName: function(name){
+      this.myMarker.labelContent = name;
+      map.setCenter(map.center);
+      alert('이름 변경이 완료되었습니다.');
+    },
+    changeUserLoc: function(sid){
+      const idx = this.userMarkers.findIndex(x => x.sid === sid);
+      const user = this.userMarkers[idx];
+      const coord = new google.maps.LatLng(user.loc.lat, user.loc.lng);
+      map.setCenter(coord);
+    },
     checkMap: async function() {
       try{
         const res = await axios.get('/api/maps/isvalid');
@@ -125,7 +143,6 @@ export default ({
     startUsing: function() { 
       // 가이드 화면이 사라진 후 샘플이 없는 상태에서 필터 업데이트
       this.isGuide = false;
-      eventBus.$emit('updateFilter');
       this.changeMyLoc();
     },
     resizeLoading: function() {
@@ -145,6 +162,49 @@ export default ({
           numObj[i].style.left = `${clientRect.left-this.useOrderObjLoc[i]}px`;
         }
       }
+    },
+    loadShop: function(search) {
+      this.loading = true;
+      // 기존 매장 정보를 삭제
+      for(let i = 0; i < this.shops.length; i++){
+        this.shops[i].setMap(null);
+      }
+      this.shops = [];
+      this.infos = [];
+      // create infowindow
+      const infoWindow = new google.maps.InfoWindow();
+      // call api
+      for(let word of search){
+        const request = {
+          location: map.center,
+          radius: '500',
+          type: ['restaurant'],
+          keyword: word
+        };
+        service.nearbySearch(request, (results, status) => {
+          if (status == google.maps.places.PlacesServiceStatus.OK) {
+            // 전달받은 매장 정보를 마커로 등록
+            for(let shop of results){
+              this.shops.push(new google.maps.Marker({
+                position: new google.maps.LatLng(shop.geometry.location.lat(), shop.geometry.location.lng()),
+                map: map
+              }));
+              const contentString = [
+                '<div>',
+                '   <p>' + shop.name + '</p>',
+                '</div>'
+              ].join('');
+              this.infos.push(contentString); // infos 삭제 가능
+              const idx = this.shops.length-1;
+              google.maps.event.addListener(this.shops[idx], 'click', () => {
+                infoWindow.setContent(contentString);
+                infoWindow.open(map, this.shops[idx]);
+              });
+            }
+          }
+        });
+      }
+      this.loading = false;
     }
   },
   sockets: {
@@ -242,61 +302,7 @@ export default ({
     this.checkMap();
     // 구글 맵 초기화
     this.initMap();
-    // 설계상 지울 수 없는 이벤트 버스들
-    eventBus.$on('changeName', (data) => {
-      this.myMarker.labelContent = data.name;
-      map.setCenter(map.center);
-      alert('이름 변경이 완료되었습니다.');
-    })
-    eventBus.$on('changeUserLoc', (data) => {
-      const idx = this.userMarkers.findIndex(x => x.sid === data.sid);
-      const user = this.userMarkers[idx];
-      const coord = new google.maps.LatLng(user.loc.lat, user.loc.lng);
-      map.setCenter(coord);
-    });
-    eventBus.$on('loadShop', (data) => {
-      this.loading = true;
-      // 기존 매장 정보를 삭제
-      for(let i = 0; i < this.shops.length; i++){
-        this.shops[i].setMap(null);
-      }
-      this.shops = [];
-      this.infos = [];
-      // create infowindow
-      const infoWindow = new google.maps.InfoWindow();
-      // call api
-      for(let word of data.search){
-        const request = {
-          location: map.center,
-          radius: '500',
-          type: ['restaurant'],
-          keyword: word
-        };
-        service.nearbySearch(request, (results, status) => {
-          if (status == google.maps.places.PlacesServiceStatus.OK) {
-            // 전달받은 매장 정보를 마커로 등록
-            for(let shop of results){
-              this.shops.push(new google.maps.Marker({
-                position: new google.maps.LatLng(shop.geometry.location.lat(), shop.geometry.location.lng()),
-                map: map
-              }));
-              const contentString = [
-                '<div>',
-                '   <p>' + shop.name + '</p>',
-                '</div>'
-              ].join('');
-              this.infos.push(contentString); // infos 삭제 가능
-              const idx = this.shops.length-1;
-              google.maps.event.addListener(this.shops[idx], 'click', () => {
-                infoWindow.setContent(contentString);
-                infoWindow.open(map, this.shops[idx]);
-              });
-            }
-          }
-        });
-      }
-      this.loading = false;
-    });
+    
     // 사용 순서번호를 매긴다.
     this.useOrderObjName = ['menuShare', 'myFilter', 'userFilter', 'applyFilter'];
     this.useOrderObjLoc = [10, 0, 0, 0];

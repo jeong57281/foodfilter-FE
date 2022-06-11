@@ -11,7 +11,6 @@ export default ({
   name: 'MainPage',
   beforeCreate() {
     Vue.use(new VueSocketIO({ 
-      debug: true,
       connection: '/room'
     }));
   },
